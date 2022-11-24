@@ -1,13 +1,14 @@
 import asyncio
 
 
-async def client(host,port):
+async def client(host, port):
     reader, writer = await asyncio.open_connection(host, port)
     print(f"Connected to server {host} {port} ")
-    writer.write(input("Print text to send").encode())
-    await writer.drain()
+    # input("Print text to send: ").encode()
 
     while True:
+        writer.write(input("Print text to server: ").encode())
+        await writer.drain()
         data = await reader.read(1024)
 
         if not data:
@@ -19,4 +20,4 @@ async def client(host,port):
 # async def run_client():
 
 if __name__ == '__main__':
-    asyncio.run(client('localhost',7673))
+    asyncio.run(client('127.0.0.1', 7673))
