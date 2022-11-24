@@ -1,24 +1,32 @@
 import asyncio
 
 
-async def handle_echo(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-    data = None
-    while True:
-        data = await reader.read(256)
-        message = data.decode()
-        addr, port = writer.get_extra_info("peernmae")
-        print((f"Message from {addr}:{port}: {message!r}"))
+async def connection_server(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+    """Server works with client"""
+    addr = writer.get_extra_info("peername")  # give address of client
 
-        writer.write(data)
-        await writer.drain()
+    print(f"Server accept connection from {addr}")
+    msg = 1
+    while not msg:
+        data = await reader.read(1024)
+        msg = data.decode()
+        print(f"Message from {addr}:{port}: {msg}")
 
-        writer.close()
+        writer.write(data)  # send back info
+        await writer.drain()  # make clear that msg send
+
+    writer.close()
+    await writer.wait_closed()
 
 
-async def main():
-    server = await asyncio.start_server(handle_echo, '127.0.0.1', 8888)
-    async with server:
-        await server.serve_forever()
+async def run_server(host, port):
+    """Server, waiting connection"""
+    print("Server starts, waiting for connections")
+    work_server = await asyncio.start_server(connection_server, host, port)
+    await work_server.serve_forever()
 
-if  __name__ == '__main__':
-    asyncio.run(main())
+
+if __name__ == '__main__':
+    host = 'localhost'
+    port = 7673
+    asyncio.run(run_server(host, port))
